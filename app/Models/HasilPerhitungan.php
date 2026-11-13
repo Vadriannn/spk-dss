@@ -7,6 +7,8 @@ use Illuminate\Database\Eloquent\Relations\BelongsTo;
 
 class HasilPerhitungan extends Model
 {
+    public $timestamps = false;
+
     protected $table = 'hasil_perhitungans';
 
     protected $fillable = [
@@ -38,4 +40,3 @@ class HasilPerhitungan extends Model
         return $this->belongsTo(SesiAlternatif::class, 'sesi_alternatif_id');
     }
 }
-

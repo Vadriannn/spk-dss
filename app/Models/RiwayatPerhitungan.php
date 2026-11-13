@@ -8,6 +8,8 @@ use Illuminate\Database\Eloquent\Relations\HasMany;
 
 class RiwayatPerhitungan extends Model
 {
+    public $timestamps = false;
+
     protected $table = 'riwayat_perhitungans';
 
     protected $fillable = [
@@ -48,4 +50,3 @@ class RiwayatPerhitungan extends Model
         return $this->hasMany(HasilPerhitungan::class, 'riwayat_perhitungans_id');
     }
 }
-

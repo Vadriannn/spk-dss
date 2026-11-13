@@ -8,6 +8,8 @@ use Illuminate\Database\Eloquent\Relations\HasMany;
 
 class SesiKriteria extends Model
 {
+    public $timestamps = false;
+
     protected $table = 'sesi_kriterias';
 
     protected $fillable = [
@@ -49,4 +51,3 @@ class SesiKriteria extends Model
         return $this->hasMany(DetailPerhitungan::class, 'sesi_kriterias_id');
     }
 }
-

@@ -1,198 +1,204 @@
 @extends('layouts.app')
 
-@section('title', 'Dashboard - SPK TOPSIS Faency.id')
+@section('title', 'Tabel A - Nilai Alternatif terhadap Kriteria | SPK Faency.id')
 
 @section('content')
-<div class="space-y-6">
+<div class="stack">
     <!-- Hero Header -->
-    <div class="rounded-2xl bg-gradient-to-r from-slate-900 via-indigo-950 to-slate-900 text-white p-6 sm:p-8 shadow-lg">
-        <div class="flex flex-col lg:flex-row lg:items-center lg:justify-between gap-6">
-            <div class="space-y-2 max-w-2xl">
-                <span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-indigo-500/20 text-indigo-200 border border-indigo-400/30">
-                    Decision Support System &bull; Metode TOPSIS
-                </span>
-                <h1 class="text-2xl sm:text-3xl font-bold tracking-tight">
-                    Sistem Rekomendasi Supplier Pakaian Thrift &mdash; Faency.id
-                </h1>
-                <p class="text-sm text-slate-300 leading-relaxed">
-                    Mengubah proses seleksi pemasok dari penilaian manual yang subjektif menjadi pemeringkatan terstruktur, objektif, dan terukur berdasarkan jarak terhadap solusi ideal positif dan negatif.
+    <div class="hero">
+        <div>
+            <h1>Tabel A: Nilai Alternatif terhadap Kriteria</h1>
+            <p>Kelola data alternatif supplier, bobot kriteria, dan matriks penilaian awal ($X_{ij}$) untuk studi kasus Faency.id.</p>
+        </div>
+        <div class="flex-row">
+            <a href="{{ route('kriterias.index') }}" class="btn btn-outline">Kelola Kriteria &amp; Bobot</a>
+            <a href="{{ route('alternatifs.index') }}" class="btn btn-primary">+ Kelola Alternatif</a>
+        </div>
+    </div>
+
+    <!-- Ringkasan Data -->
+    <div class="stats-grid">
+        <div class="stat-card">
+            <div class="stat-label">Jumlah Alternatif</div>
+            <div class="stat-value">{{ $sesiAlternatifs->count() }}</div>
+            <div class="stat-sub">Supplier pakaian thrift terdaftar</div>
+        </div>
+        <div class="stat-card">
+            <div class="stat-label">Jumlah Kriteria</div>
+            <div class="stat-value">{{ $sesiKriterias->count() }}</div>
+            <div class="stat-sub">Total bobot: <strong class="mono">{{ number_format($totalBobot, 2) }}</strong></div>
+        </div>
+        <div class="stat-card">
+            <div class="stat-label">Sel Penilaian (Tabel A)</div>
+            <div class="stat-value">{{ $penilaians->count() }}</div>
+            <div class="stat-sub">Dari {{ $sesiAlternatifs->count() * $sesiKriterias->count() }} kombinasi alternatif &times; kriteria</div>
+        </div>
+    </div>
+
+    @if ($sesiKriterias->isEmpty() || $sesiAlternatifs->isEmpty())
+        <div class="card">
+            <div class="card-body" style="text-align: center; padding: 2rem;">
+                <h2 style="margin: 0 0 0.5rem; font-size: 1.05rem;">Belum Ada Data Kriteria atau Alternatif</h2>
+                <p class="muted" style="margin-bottom: 1rem;">
+                    Anda dapat menginput kriteria dan alternatif secara manual, atau memuat data awal studi kasus jurnal (6 Kriteria &amp; 21 Alternatif).
                 </p>
-            </div>
-            <div class="flex flex-wrap gap-3 shrink-0">
-                @if ($recentSesis->isNotEmpty())
-                    <a href="{{ route('sesi-keputusans.show', $recentSesis->first()) }}"
-                       class="px-4 py-2.5 rounded-lg bg-indigo-500 hover:bg-indigo-400 text-white text-sm font-semibold shadow transition">
-                        Kelola &amp; Hitung Sesi Aktif
-                    </a>
-                @else
-                    <a href="{{ route('sesi-keputusans.index') }}"
-                       class="px-4 py-2.5 rounded-lg bg-indigo-500 hover:bg-indigo-400 text-white text-sm font-semibold shadow transition">
-                        Buat Sesi Keputusan
-                    </a>
-                @endif
-                <a href="{{ route('proposal') }}"
-                   class="px-4 py-2.5 rounded-lg bg-white/10 hover:bg-white/20 text-white text-sm font-medium border border-white/15 transition">
-                    Lihat Proposal &amp; ERD
-                </a>
+                <form action="{{ route('tabel-a.seed') }}" method="POST" style="display: inline-block;">
+                    @csrf
+                    <button type="submit" class="btn btn-success">
+                        Muat Data Awal Studi Kasus (6 Kriteria &amp; 21 Alternatif)
+                    </button>
+                </form>
             </div>
         </div>
-    </div>
+    @endif
 
-    <!-- Summary Cards -->
-    <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
-        <div class="bg-white rounded-xl border border-slate-200 p-5 shadow-sm">
-            <div class="text-xs font-medium text-slate-500 uppercase tracking-wider">Kriteria Penilaian</div>
-            <div class="mt-2 flex items-baseline justify-between">
-                <div class="text-3xl font-bold text-slate-900">{{ $totalKriteria }}</div>
-                <a href="{{ route('kriterias.index') }}" class="text-xs font-medium text-indigo-600 hover:underline">Kelola &rarr;</a>
-            </div>
-            <p class="mt-1 text-xs text-slate-500">Harga, Kualitas, Terjual, Stok, Layanan, Reputasi</p>
-        </div>
-
-        <div class="bg-white rounded-xl border border-slate-200 p-5 shadow-sm">
-            <div class="text-xs font-medium text-slate-500 uppercase tracking-wider">Alternatif Supplier</div>
-            <div class="mt-2 flex items-baseline justify-between">
-                <div class="text-3xl font-bold text-slate-900">{{ $totalAlternatif }}</div>
-                <a href="{{ route('alternatifs.index') }}" class="text-xs font-medium text-indigo-600 hover:underline">Tambah Baru &rarr;</a>
-            </div>
-            <p class="mt-1 text-xs text-slate-500">Dinamis (dapat ditambah/ubah kapan saja)</p>
-        </div>
-
-        <div class="bg-white rounded-xl border border-slate-200 p-5 shadow-sm">
-            <div class="text-xs font-medium text-slate-500 uppercase tracking-wider">Sesi Keputusan</div>
-            <div class="mt-2 flex items-baseline justify-between">
-                <div class="text-3xl font-bold text-slate-900">{{ $totalSesi }}</div>
-                <a href="{{ route('sesi-keputusans.index') }}" class="text-xs font-medium text-indigo-600 hover:underline">Buka Sesi &rarr;</a>
-            </div>
-            <p class="mt-1 text-xs text-slate-500">Mendukung multi-sesi evaluasi &amp; bobot</p>
-        </div>
-
-        <div class="bg-white rounded-xl border border-slate-200 p-5 shadow-sm">
-            <div class="text-xs font-medium text-slate-500 uppercase tracking-wider">Riwayat Perhitungan</div>
-            <div class="mt-2 flex items-baseline justify-between">
-                <div class="text-3xl font-bold text-slate-900">{{ $totalRiwayat }}</div>
-                <a href="{{ route('riwayat-perhitungans.index') }}" class="text-xs font-medium text-indigo-600 hover:underline">Lihat Riwayat &rarr;</a>
-            </div>
-            <p class="mt-1 text-xs text-slate-500">Tersimpan lengkap beserta matriks R, Y, A+, A-</p>
-        </div>
-    </div>
-
-    <!-- Latest Ranking & Active Sessions -->
-    <div class="grid grid-cols-1 lg:grid-cols-3 gap-6">
-        <div class="lg:col-span-2 bg-white rounded-xl border border-slate-200 shadow-sm overflow-hidden">
-            <div class="px-5 py-4 border-b border-slate-200 flex items-center justify-between gap-2">
+    <!-- Ringkasan Bobot Kriteria -->
+    @if ($sesiKriterias->isNotEmpty())
+        <div class="card">
+            <div class="card-header">
                 <div>
-                    <h2 class="font-semibold text-slate-900">Peringkat Rekomendasi Supplier Terbaru</h2>
-                    @if ($latestRiwayat)
-                        <p class="text-xs text-slate-500">
-                            Sesi: {{ $latestRiwayat->sesiKeputusan->nama }} &bull; {{ $latestRiwayat->waktu->format('d M Y H:i') }}
-                        </p>
-                    @endif
+                    <strong style="font-size: 0.95rem;">Daftar Kriteria &amp; Bobot Aktif</strong>
+                    <div class="muted">Ubah bobot atau tambah kriteria melalui menu <a href="{{ route('kriterias.index') }}" style="color:#4f46e5; text-decoration:underline;">Kriteria &amp; Bobot</a>.</div>
                 </div>
-                @if ($latestRiwayat)
-                    <a href="{{ route('riwayat-perhitungans.show', $latestRiwayat) }}"
-                       class="text-xs font-semibold text-indigo-600 hover:text-indigo-500">
-                        Detail Matriks TOPSIS &rarr;
-                    </a>
-                @endif
+            </div>
+            <div class="table-wrap">
+                <table>
+                    <thead>
+                        <tr>
+                            <th>Kode</th>
+                            <th>Nama / Keterangan Kriteria</th>
+                            <th class="text-center">Tipe</th>
+                            <th class="text-right">Bobot</th>
+                            <th class="text-right">Proporsi (%)</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        @foreach ($sesiKriterias as $sk)
+                            <tr>
+                                <td><span class="badge badge-code">{{ $sk->kriteria->kode }}</span></td>
+                                <td>{{ $sk->kriteria->deskripsi }}</td>
+                                <td class="text-center">
+                                    <span class="badge {{ $sk->tipe === 'cost' ? 'badge-cost' : 'badge-benefit' }}">
+                                        {{ $sk->tipe }}
+                                    </span>
+                                </td>
+                                <td class="text-right mono" style="font-weight: 700;">{{ rtrim(rtrim(number_format($sk->bobot, 4, '.', ''), '0'), '.') }}</td>
+                                <td class="text-right mono muted">
+                                    {{ $totalBobot > 0 ? number_format(($sk->bobot / $totalBobot) * 100, 2) : '0.00' }}%
+                                </td>
+                            </tr>
+                        @endforeach
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    @endif
+
+    <!-- Form Cepat: Tambah Alternatif + Input Nilainya ke Tabel A -->
+    @if ($sesiKriterias->isNotEmpty())
+        <div class="card">
+            <div class="card-header">
+                <div>
+                    <strong style="font-size: 0.95rem;">Tambah Alternatif Baru + Nilai ke Tabel A</strong>
+                    <div class="muted">Tambahkan supplier baru beserta nilainya terhadap seluruh kriteria dalam satu langkah.</div>
+                </div>
+            </div>
+            <div class="card-body">
+                <form action="{{ route('tabel-a.quick-add') }}" method="POST" class="stack" style="gap: 0.85rem;">
+                    @csrf
+                    <div class="form-grid">
+                        <div class="form-group">
+                            <label class="label">Kode Alternatif</label>
+                            <input type="text" name="kode" value="{{ old('kode', $suggestedCode) }}" required class="input mono">
+                        </div>
+                        <div class="form-group" style="grid-column: span 2;">
+                            <label class="label">Nama Alternatif Supplier</label>
+                            <input type="text" name="nama" value="{{ old('nama') }}" placeholder="Contoh: Thrift Nusantara" required class="input">
+                        </div>
+                        <div class="form-group">
+                            <label class="label">Keterangan (Opsional)</label>
+                            <input type="text" name="deskripsi" value="{{ old('deskripsi') }}" placeholder="Catatan supplier" class="input">
+                        </div>
+                    </div>
+
+                    <div>
+                        <div class="label mb-2">Nilai terhadap Setiap Kriteria (Skala 1 - 3 atau angka bebas):</div>
+                        <div class="form-grid">
+                            @foreach ($sesiKriterias as $sk)
+                                <div class="form-group">
+                                    <label class="label muted">{{ $sk->kriteria->kode }} &mdash; {{ \Illuminate\Support\Str::limit($sk->kriteria->deskripsi, 28) }}</label>
+                                    <input type="number" step="0.01" min="0.01" name="nilai[{{ $sk->id }}]" value="2" required class="input mono">
+                                </div>
+                            @endforeach
+                        </div>
+                    </div>
+
+                    <div>
+                        <button type="submit" class="btn btn-primary">+ Tambah Alternatif ke Tabel A</button>
+                    </div>
+                </form>
+            </div>
+        </div>
+    @endif
+
+    <!-- Tabel A: Matriks Nilai Alternatif terhadap Kriteria -->
+    @if ($sesiAlternatifs->isNotEmpty() && $sesiKriterias->isNotEmpty())
+        <div class="card">
+            <div class="card-header">
+                <div>
+                    <strong style="font-size: 0.95rem;">Tabel A &mdash; Matriks Nilai Alternatif terhadap Kriteria</strong>
+                    <div class="muted">Edit nilai pada tabel di bawah ini lalu klik <strong>Simpan Nilai Tabel A</strong>.</div>
+                </div>
             </div>
 
-            @if ($latestRiwayat && $latestRiwayat->hasilPerhitungans->isNotEmpty())
-                <div class="overflow-x-auto">
-                    <table class="min-w-full divide-y divide-slate-200 text-sm">
-                        <thead class="bg-slate-50 text-xs font-semibold text-slate-600 uppercase">
+            <form action="{{ route('tabel-a.update') }}" method="POST">
+                @csrf
+                @method('PUT')
+                <div class="table-wrap">
+                    <table>
+                        <thead>
                             <tr>
-                                <th class="px-4 py-3 text-center w-16">Rank</th>
-                                <th class="px-4 py-3 text-left">Kode</th>
-                                <th class="px-4 py-3 text-left">Supplier</th>
-                                <th class="px-4 py-3 text-right">D+</th>
-                                <th class="px-4 py-3 text-right">D-</th>
-                                <th class="px-4 py-3 text-right">Preferensi (V)</th>
+                                <th style="width: 70px;">Kode</th>
+                                <th style="min-width: 190px;">Nama Alternatif</th>
+                                @foreach ($sesiKriterias as $sk)
+                                    <th class="text-center" style="min-width: 95px;">
+                                        <div class="mono" style="color: #4338ca;">{{ $sk->kriteria->kode }}</div>
+                                        <div style="font-weight: 400; font-size: 0.68rem; color: #64748b;">
+                                            Bobot: {{ rtrim(rtrim(number_format($sk->bobot, 2, '.', ''), '0'), '.') }} ({{ strtoupper($sk->tipe) }})
+                                        </div>
+                                    </th>
+                                @endforeach
                             </tr>
                         </thead>
-                        <tbody class="divide-y divide-slate-100">
-                            @foreach ($latestRiwayat->hasilPerhitungans->take(10) as $hasil)
-                                <tr class="{{ $hasil->ranking === 1 ? 'bg-emerald-50/70' : 'hover:bg-slate-50' }}">
-                                    <td class="px-4 py-2.5 text-center font-bold">
-                                        @if ($hasil->ranking === 1)
-                                            <span class="inline-flex items-center justify-center w-6 h-6 rounded-full bg-emerald-600 text-white text-xs">1</span>
-                                        @elseif ($hasil->ranking === 2)
-                                            <span class="inline-flex items-center justify-center w-6 h-6 rounded-full bg-indigo-600 text-white text-xs">2</span>
-                                        @elseif ($hasil->ranking === 3)
-                                            <span class="inline-flex items-center justify-center w-6 h-6 rounded-full bg-amber-500 text-white text-xs">3</span>
-                                        @else
-                                            <span class="text-slate-500">{{ $hasil->ranking }}</span>
-                                        @endif
-                                    </td>
-                                    <td class="px-4 py-2.5 font-mono text-xs text-slate-600">
-                                        {{ $hasil->sesiAlternatif->alternatif->kode }}
-                                    </td>
-                                    <td class="px-4 py-2.5 font-medium text-slate-900">
-                                        {{ $hasil->sesiAlternatif->alternatif->nama }}
-                                        @if ($hasil->ranking === 1)
-                                            <span class="ml-1.5 inline-flex items-center px-2 py-0.5 rounded text-[11px] font-semibold bg-emerald-100 text-emerald-800">
-                                                Rekomendasi Utama
-                                            </span>
-                                        @endif
-                                    </td>
-                                    <td class="px-4 py-2.5 text-right font-mono text-xs text-slate-600">{{ number_format($hasil->jarak_positif, 4) }}</td>
-                                    <td class="px-4 py-2.5 text-right font-mono text-xs text-slate-600">{{ number_format($hasil->jarak_negatif, 4) }}</td>
-                                    <td class="px-4 py-2.5 text-right font-mono font-bold text-indigo-700">{{ number_format($hasil->nilai_preferensi, 4) }}</td>
+                        <tbody>
+                            @foreach ($sesiAlternatifs as $sa)
+                                <tr>
+                                    <td><span class="badge badge-code">{{ $sa->alternatif->kode }}</span></td>
+                                    <td style="font-weight: 600; color: #0f172a;">{{ $sa->alternatif->nama }}</td>
+                                    @foreach ($sesiKriterias as $sk)
+                                        @php
+                                            $key = "{$sa->id}_{$sk->id}";
+                                            $val = isset($penilaians[$key]) ? (float) $penilaians[$key]->nilai : 2;
+                                        @endphp
+                                        <td class="text-center">
+                                            <input type="number" step="0.01" min="0.01"
+                                                   name="nilai[{{ $sa->id }}][{{ $sk->id }}]"
+                                                   value="{{ rtrim(rtrim(number_format($val, 2, '.', ''), '0'), '.') }}"
+                                                   required
+                                                   class="input input-sm input-score">
+                                        </td>
+                                    @endforeach
                                 </tr>
                             @endforeach
                         </tbody>
                     </table>
                 </div>
-                @if ($latestRiwayat->hasilPerhitungans->count() > 10)
-                    <div class="px-5 py-3 bg-slate-50 border-t border-slate-200 text-xs text-slate-600 flex justify-between items-center">
-                        <span>Menampilkan 10 teratas dari {{ $latestRiwayat->hasilPerhitungans->count() }} supplier.</span>
-                        <a href="{{ route('riwayat-perhitungans.show', $latestRiwayat) }}" class="font-semibold text-indigo-600 hover:underline">
-                            Lihat seluruh {{ $latestRiwayat->hasilPerhitungans->count() }} peringkat &rarr;
-                        </a>
-                    </div>
-                @endif
-            @else
-                <div class="p-8 text-center text-sm text-slate-500">
-                    Belum ada hasil perhitungan TOPSIS. Silakan buka sesi keputusan dan jalankan perhitungan.
+                <div class="card-header" style="background: #f8fafc; border-top: 1px solid #e2e8f0; border-bottom: none;">
+                    <span class="muted">Menampilkan {{ $sesiAlternatifs->count() }} alternatif &times; {{ $sesiKriterias->count() }} kriteria.</span>
+                    <button type="submit" class="btn btn-success">Simpan Nilai Tabel A</button>
                 </div>
-            @endif
+            </form>
         </div>
-
-        <div class="space-y-4">
-            <div class="bg-white rounded-xl border border-slate-200 p-5 shadow-sm">
-                <h2 class="font-semibold text-slate-900 mb-3">Sesi Keputusan Terbaru</h2>
-                <div class="space-y-3">
-                    @forelse ($recentSesis as $sesi)
-                        <a href="{{ route('sesi-keputusans.show', $sesi) }}"
-                           class="block rounded-lg border border-slate-200 p-3 hover:border-indigo-300 hover:bg-indigo-50/30 transition">
-                            <div class="flex items-start justify-between gap-2">
-                                <div class="font-medium text-sm text-slate-900">{{ $sesi->nama }}</div>
-                                <span class="shrink-0 px-2 py-0.5 rounded-full text-[11px] font-medium
-                                    {{ $sesi->status === 'selesai' ? 'bg-emerald-100 text-emerald-800' : 'bg-amber-100 text-amber-800' }}">
-                                    {{ ucfirst($sesi->status) }}
-                                </span>
-                            </div>
-                            <div class="mt-1.5 text-xs text-slate-500">
-                                {{ $sesi->sesi_kriterias_count }} Kriteria &bull; {{ $sesi->sesi_alternatifs_count }} Alternatif &bull; {{ $sesi->riwayat_perhitungans_count }}x Hitung
-                            </div>
-                        </a>
-                    @empty
-                        <p class="text-xs text-slate-500">Belum ada sesi keputusan.</p>
-                    @endforelse
-                </div>
-            </div>
-
-            <div class="bg-white rounded-xl border border-slate-200 p-5 shadow-sm">
-                <h2 class="font-semibold text-slate-900 mb-2">Alur Penggunaan Dinamis</h2>
-                <ol class="text-xs text-slate-600 space-y-2 list-decimal list-inside">
-                    <li>Kelola master <strong>Kriteria</strong> &amp; <strong>Alternatif</strong> (bisa ditambah kapan saja).</li>
-                    <li>Buka atau buat <strong>Sesi Keputusan</strong> baru.</li>
-                    <li>Tambah alternatif baru langsung di dalam sesi beserta skor penilaiannya.</li>
-                    <li>Klik <strong>Hitung TOPSIS</strong> untuk menghasilkan peringkat &amp; menyimpan riwayat lengkap.</li>
-                </ol>
-            </div>
-        </div>
-    </div>
+    @endif
 </div>
 @endsection
-

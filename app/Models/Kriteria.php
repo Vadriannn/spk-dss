@@ -2,6 +2,7 @@
 
 namespace App\Models;
 
+use Illuminate\Database\Eloquent\Casts\Attribute;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\HasMany;
 
@@ -11,17 +12,20 @@ class Kriteria extends Model
 
     protected $fillable = [
         'kode',
-        'nama',
         'deskripsi',
         'enum',
-        'bobot_default',
     ];
 
-    protected function casts(): array
+    /**
+     * Expose `nama` accessor backed by `deskripsi` to match the ERD schema.
+     *
+     * @return Attribute<string, never>
+     */
+    protected function nama(): Attribute
     {
-        return [
-            'bobot_default' => 'float',
-        ];
+        return Attribute::make(
+            get: fn (): string => (string) $this->deskripsi,
+        );
     }
 
     public function sesiKriterias(): HasMany
@@ -29,4 +33,3 @@ class Kriteria extends Model
         return $this->hasMany(SesiKriteria::class, 'kriterias_id');
     }
 }
-

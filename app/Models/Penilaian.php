@@ -7,6 +7,8 @@ use Illuminate\Database\Eloquent\Relations\BelongsTo;
 
 class Penilaian extends Model
 {
+    public $timestamps = false;
+
     protected $table = 'penilaians';
 
     protected $fillable = [
@@ -32,4 +34,3 @@ class Penilaian extends Model
         return $this->belongsTo(SesiAlternatif::class, 'sesi_alternatif_id');
     }
 }
-

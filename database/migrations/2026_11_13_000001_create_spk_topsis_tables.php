@@ -14,10 +14,8 @@ return new class extends Migration
         Schema::create('kriterias', function (Blueprint $table) {
             $table->id();
             $table->string('kode', 45)->unique();
-            $table->string('nama', 100);
-            $table->text('deskripsi')->nullable();
+            $table->text('deskripsi');
             $table->enum('enum', ['benefit', 'cost'])->default('benefit');
-            $table->decimal('bobot_default', 10, 4)->default(1);
             $table->timestamps();
         });
 
@@ -44,14 +42,12 @@ return new class extends Migration
             $table->enum('tipe', ['benefit', 'cost'])->default('benefit');
             $table->foreignId('sesi_keputusans_id')->constrained('sesi_keputusans')->cascadeOnDelete();
             $table->foreignId('kriterias_id')->constrained('kriterias')->cascadeOnDelete();
-            $table->timestamps();
         });
 
         Schema::create('sesi_alternatifs', function (Blueprint $table) {
             $table->id();
             $table->foreignId('sesi_keputusans_id')->constrained('sesi_keputusans')->cascadeOnDelete();
             $table->foreignId('alternatifs_id')->constrained('alternatifs')->cascadeOnDelete();
-            $table->timestamps();
         });
 
         Schema::create('penilaians', function (Blueprint $table) {
@@ -59,7 +55,6 @@ return new class extends Migration
             $table->decimal('nilai', 12, 4);
             $table->foreignId('sesi_kriterias_id')->constrained('sesi_kriterias')->cascadeOnDelete();
             $table->foreignId('sesi_alternatif_id')->constrained('sesi_alternatifs')->cascadeOnDelete();
-            $table->timestamps();
 
             $table->unique(['sesi_kriterias_id', 'sesi_alternatif_id'], 'penilaians_kriteria_alternatif_unique');
         });
@@ -69,7 +64,6 @@ return new class extends Migration
             $table->dateTime('waktu');
             $table->foreignId('users_id')->constrained('users')->cascadeOnDelete();
             $table->foreignId('sesi_keputusans_id')->constrained('sesi_keputusans')->cascadeOnDelete();
-            $table->timestamps();
         });
 
         Schema::create('ideal_perhitungans', function (Blueprint $table) {
@@ -78,7 +72,6 @@ return new class extends Migration
             $table->decimal('ideal_negatif', 14, 6);
             $table->foreignId('sesi_kriterias_id')->constrained('sesi_kriterias')->cascadeOnDelete();
             $table->foreignId('riwayat_perhitungans_id')->constrained('riwayat_perhitungans')->cascadeOnDelete();
-            $table->timestamps();
         });
 
         Schema::create('detail_perhitungans', function (Blueprint $table) {
@@ -89,7 +82,6 @@ return new class extends Migration
             $table->foreignId('riwayat_perhitungans_id')->constrained('riwayat_perhitungans')->cascadeOnDelete();
             $table->foreignId('sesi_kriterias_id')->constrained('sesi_kriterias')->cascadeOnDelete();
             $table->foreignId('sesi_alternatif_id')->constrained('sesi_alternatifs')->cascadeOnDelete();
-            $table->timestamps();
         });
 
         Schema::create('hasil_perhitungans', function (Blueprint $table) {
@@ -100,7 +92,6 @@ return new class extends Migration
             $table->integer('ranking');
             $table->foreignId('riwayat_perhitungans_id')->constrained('riwayat_perhitungans')->cascadeOnDelete();
             $table->foreignId('sesi_alternatif_id')->constrained('sesi_alternatifs')->cascadeOnDelete();
-            $table->timestamps();
         });
     }
 
@@ -121,4 +112,3 @@ return new class extends Migration
         Schema::dropIfExists('kriterias');
     }
 };
-

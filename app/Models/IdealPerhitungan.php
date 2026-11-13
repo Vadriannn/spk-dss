@@ -7,6 +7,8 @@ use Illuminate\Database\Eloquent\Relations\BelongsTo;
 
 class IdealPerhitungan extends Model
 {
+    public $timestamps = false;
+
     protected $table = 'ideal_perhitungans';
 
     protected $fillable = [
@@ -34,4 +36,3 @@ class IdealPerhitungan extends Model
         return $this->belongsTo(RiwayatPerhitungan::class, 'riwayat_perhitungans_id');
     }
 }
-

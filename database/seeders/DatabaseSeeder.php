@@ -9,14 +9,13 @@ use App\Models\SesiAlternatif;
 use App\Models\SesiKeputusan;
 use App\Models\SesiKriteria;
 use App\Models\User;
-use App\Services\TopsisService;
 use Illuminate\Database\Seeder;
 use Illuminate\Support\Facades\Hash;
 
 class DatabaseSeeder extends Seeder
 {
     /**
-     * Seed the application's database.
+     * Seed the application's database with initial criteria, weights, alternatives, and Tabel A scores.
      */
     public function run(): void
     {
@@ -28,54 +27,74 @@ class DatabaseSeeder extends Seeder
             ]
         );
 
+        $sesi = SesiKeputusan::firstOrCreate(
+            ['nama' => 'Evaluasi Supplier Pakaian Thrift Faency.id'],
+            [
+                'deskripsi' => 'Input alternatif, bobot kriteria, dan nilai alternatif terhadap kriteria (Tabel A).',
+                'status' => 'aktif',
+                'users_id' => $admin->id,
+            ]
+        );
+
         $kriteriaData = [
             [
                 'kode' => 'C1',
-                'nama' => 'Harga',
-                'deskripsi' => 'Rp 10.000 - Rp 120.000 per pcs (1: Murah / < Rp 45.000, 2: Sedang / Rp 45.000 - Rp 80.000, 3: Mahal / > Rp 80.000)',
+                'deskripsi' => 'Harga (Rp 10.000 - Rp 120.000 per pcs)',
                 'enum' => 'cost',
-                'bobot_default' => 3,
+                'bobot' => 3,
             ],
             [
                 'kode' => 'C2',
-                'nama' => 'Kualitas Produk',
-                'deskripsi' => 'Grade A hingga Grade C (1: Grade C, 2: Grade B, 3: Grade A)',
+                'deskripsi' => 'Kualitas Produk (Grade A hingga Grade C)',
                 'enum' => 'benefit',
-                'bobot_default' => 3,
+                'bobot' => 3,
             ],
             [
                 'kode' => 'C3',
-                'nama' => 'Jumlah Barang Terjual',
-                'deskripsi' => '< 100 hingga 200 barang per bulan (1: < 100 pcs, 2: 100 - 200 pcs, 3: > 200 pcs)',
+                'deskripsi' => 'Jumlah Barang Terjual (< 100 hingga 200 barang/bln)',
                 'enum' => 'benefit',
-                'bobot_default' => 1,
+                'bobot' => 1,
             ],
             [
                 'kode' => 'C4',
-                'nama' => 'Ketersediaan Stok',
-                'deskripsi' => 'Rendah hingga Tinggi (1: Rendah, 2: Sedang, 3: Tinggi)',
+                'deskripsi' => 'Ketersediaan Stok (Rendah hingga Tinggi)',
                 'enum' => 'benefit',
-                'bobot_default' => 2,
+                'bobot' => 2,
             ],
             [
                 'kode' => 'C5',
-                'nama' => 'Layanan',
-                'deskripsi' => 'Kurang hingga Baik (1: Kurang, 2: Cukup, 3: Baik)',
+                'deskripsi' => 'Layanan (Kurang hingga Baik)',
                 'enum' => 'benefit',
-                'bobot_default' => 1,
+                'bobot' => 1,
             ],
             [
                 'kode' => 'C6',
-                'nama' => 'Reputasi Toko',
-                'deskripsi' => 'Kurang hingga Baik (1: Kurang, 2: Cukup, 3: Baik)',
+                'deskripsi' => 'Reputasi Toko (Kurang hingga Baik)',
                 'enum' => 'benefit',
-                'bobot_default' => 2,
+                'bobot' => 2,
             ],
         ];
 
-        $kriterias = [];
+        $sesiKriterias = [];
         foreach ($kriteriaData as $row) {
-            $kriterias[$row['kode']] = Kriteria::updateOrCreate(['kode' => $row['kode']], $row);
+            $kriteria = Kriteria::updateOrCreate(
+                ['kode' => $row['kode']],
+                [
+                    'deskripsi' => $row['deskripsi'],
+                    'enum' => $row['enum'],
+                ]
+            );
+
+            $sesiKriterias[$row['kode']] = SesiKriteria::firstOrCreate(
+                [
+                    'sesi_keputusans_id' => $sesi->id,
+                    'kriterias_id' => $kriteria->id,
+                ],
+                [
+                    'bobot' => $row['bobot'],
+                    'tipe' => $row['enum'],
+                ]
+            );
         }
 
         $alternatifData = [
@@ -102,23 +121,6 @@ class DatabaseSeeder extends Seeder
             ['kode' => 'A21', 'nama' => 'Rtr_riterisecond',        'scores' => [3, 2, 3, 2, 1, 1]],
         ];
 
-        $sesi = SesiKeputusan::create([
-            'nama' => 'Evaluasi Supplier Pakaian Thrift Faency.id (Studi Kasus Jurnal)',
-            'deskripsi' => 'Seleksi 21 alternatif supplier pakaian bekas (thrift shop) pada Faency.id menggunakan metode TOPSIS berdasarkan 6 kriteria utama.',
-            'status' => 'aktif',
-            'users_id' => $admin->id,
-        ]);
-
-        $sesiKriterias = [];
-        foreach ($kriterias as $kode => $kriteria) {
-            $sesiKriterias[$kode] = SesiKriteria::create([
-                'bobot' => $kriteria->bobot_default,
-                'tipe' => $kriteria->enum,
-                'sesi_keputusans_id' => $sesi->id,
-                'kriterias_id' => $kriteria->id,
-            ]);
-        }
-
         $kriteriaCodes = ['C1', 'C2', 'C3', 'C4', 'C5', 'C6'];
 
         foreach ($alternatifData as $item) {
@@ -130,20 +132,22 @@ class DatabaseSeeder extends Seeder
                 ]
             );
 
-            $sesiAlternatif = SesiAlternatif::create([
+            $sesiAlternatif = SesiAlternatif::firstOrCreate([
                 'sesi_keputusans_id' => $sesi->id,
                 'alternatifs_id' => $alternatif->id,
             ]);
 
             foreach ($kriteriaCodes as $idx => $kode) {
-                Penilaian::create([
-                    'nilai' => $item['scores'][$idx],
-                    'sesi_kriterias_id' => $sesiKriterias[$kode]->id,
-                    'sesi_alternatif_id' => $sesiAlternatif->id,
-                ]);
+                Penilaian::firstOrCreate(
+                    [
+                        'sesi_kriterias_id' => $sesiKriterias[$kode]->id,
+                        'sesi_alternatif_id' => $sesiAlternatif->id,
+                    ],
+                    [
+                        'nilai' => $item['scores'][$idx],
+                    ]
+                );
             }
         }
-
-        app(TopsisService::class)->calculate($sesi, $admin->id);
     }
 }
