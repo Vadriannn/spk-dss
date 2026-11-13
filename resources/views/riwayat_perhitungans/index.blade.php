@@ -61,6 +61,11 @@
                 </tbody>
             </table>
         </div>
+        @if ($riwayats->hasPages())
+            <div class="px-5 py-3 border-t border-slate-200 text-xs text-slate-500">
+                {{ $riwayats->links() }}
+            </div>
+        @endif
     </div>
 </div>
 @endsection

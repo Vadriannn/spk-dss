@@ -40,7 +40,7 @@
         <!-- Daftar Alternatif -->
         <div class="lg:col-span-2 bg-white rounded-xl border border-slate-200 shadow-sm overflow-hidden">
             <div class="px-5 py-4 border-b border-slate-200 flex items-center justify-between">
-                <h2 class="font-semibold text-slate-900">Daftar Alternatif ({{ $alternatifs->count() }})</h2>
+                <h2 class="font-semibold text-slate-900">Daftar Alternatif ({{ $alternatifs->total() }})</h2>
                 <a href="{{ route('sesi-keputusans.index') }}" class="text-xs font-semibold text-indigo-600 hover:underline">
                     Evaluasi di Sesi Keputusan &rarr;
                 </a>
@@ -78,6 +78,11 @@
                     <div class="p-8 text-center text-sm text-slate-500">Belum ada alternatif supplier.</div>
                 @endforelse
             </div>
+            @if ($alternatifs->hasPages())
+                <div class="px-5 py-3 border-t border-slate-200 text-xs text-slate-500">
+                    {{ $alternatifs->links() }}
+                </div>
+            @endif
         </div>
     </div>
 </div>

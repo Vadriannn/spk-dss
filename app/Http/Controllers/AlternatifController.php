@@ -12,7 +12,7 @@ class AlternatifController extends Controller
 {
     public function index(): View
     {
-        $alternatifs = Alternatif::withCount('sesiAlternatifs')->orderBy('id')->get();
+        $alternatifs = Alternatif::withCount('sesiAlternatifs')->orderBy('id')->paginate(15);
         $nextNumber = Alternatif::count() + 1;
         $suggestedCode = 'A' . $nextNumber;
 

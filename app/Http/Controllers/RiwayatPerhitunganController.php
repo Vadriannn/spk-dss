@@ -17,7 +17,7 @@ class RiwayatPerhitunganController extends Controller
         ])
             ->withCount('hasilPerhitungans')
             ->latest('id')
-            ->get();
+            ->paginate(15);
 
         return view('riwayat_perhitungans.index', compact('riwayats'));
     }

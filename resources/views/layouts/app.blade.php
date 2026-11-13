@@ -21,6 +21,7 @@
 <body class="h-full text-slate-800 antialiased">
 <div class="min-h-full flex flex-col">
     <!-- Top Navigation -->
+    @auth
     <header class="no-print bg-slate-900 text-white shadow-md sticky top-0 z-30">
         <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
             <div class="flex h-16 items-center justify-between gap-4">
@@ -69,22 +70,21 @@
                             <span class="w-2 h-2 rounded-full bg-emerald-400"></span>
                             {{ auth()->user()->nama }}
                         </span>
+                        <a href="{{ route('profil.edit') }}" class="px-3 py-1.5 rounded-md bg-slate-800 hover:bg-slate-700 text-xs font-medium text-slate-200 transition">
+                            Profil
+                        </a>
                         <form action="{{ route('logout') }}" method="POST">
                             @csrf
-                            <button type="submit" class="px-3 py-1.5 rounded-md bg-slate-800 hover:bg-slate-700 text-xs font-medium text-slate-200 transition cursor-pointer">
+                            <button type="submit" class="px-3 py-1.5 rounded-md bg-slate-700 hover:bg-slate-600 text-xs font-medium text-slate-300 transition cursor-pointer">
                                 Keluar
                             </button>
                         </form>
                     @else
-                        <form action="{{ route('demo-login') }}" method="POST">
-                            @csrf
-                            <button type="submit" class="px-3 py-1.5 rounded-md bg-indigo-600 hover:bg-indigo-500 text-xs font-semibold text-white transition cursor-pointer">
-                                Login Demo Admin
-                            </button>
-                        </form>
-                        <a href="{{ route('login') }}" class="px-3 py-1.5 rounded-md bg-slate-800 hover:bg-slate-700 text-xs font-medium text-slate-200 transition">
+                        @unless(request()->routeIs('login'))
+                        <a href="{{ route('login') }}" class="px-3 py-1.5 rounded-md bg-indigo-600 hover:bg-indigo-500 text-xs font-semibold text-white transition">
                             Masuk
                         </a>
+                        @endunless
                     @endauth
                 </div>
             </div>
@@ -97,9 +97,13 @@
                 <a href="{{ route('alternatifs.index') }}" class="px-2.5 py-1.5 rounded {{ request()->routeIs('alternatifs.*') ? 'bg-slate-800 text-white font-semibold' : 'text-slate-300' }}">Alternatif</a>
                 <a href="{{ route('riwayat-perhitungans.index') }}" class="px-2.5 py-1.5 rounded {{ request()->routeIs('riwayat-perhitungans.*') ? 'bg-slate-800 text-white font-semibold' : 'text-slate-300' }}">Riwayat</a>
                 <a href="{{ route('proposal') }}" class="px-2.5 py-1.5 rounded {{ request()->routeIs('proposal') ? 'bg-slate-800 text-white font-semibold' : 'text-slate-300' }}">Proposal &amp; ERD</a>
+                @auth
+                <a href="{{ route('profil.edit') }}" class="px-2.5 py-1.5 rounded {{ request()->routeIs('profil.*') ? 'bg-slate-800 text-white font-semibold' : 'text-slate-300' }}">Profil</a>
+                @endauth
             </div>
         </div>
     </header>
+    @endauth
 
     <!-- Main Content -->
     <main class="flex-1 max-w-7xl w-full mx-auto px-4 sm:px-6 lg:px-8 py-6 print-full">
